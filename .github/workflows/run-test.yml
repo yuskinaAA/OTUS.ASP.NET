@@ -19,11 +19,11 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Restore dependencies for test project
+      run: dotnet restore Homeworks/UnitTests/src/PromoCodeFactory.UnitTests/PromoCodeFactory.UnitTests.csproj
 
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+    - name: Build test project
+      run: dotnet build Homeworks/UnitTests/src/PromoCodeFactory.UnitTests/PromoCodeFactory.UnitTests.csproj --no-restore --configuration Release
 
-    - name: Run unit tests
-      run: dotnet test OTUS.ASP.NET.Test/OTUS.ASP.NET.Test.csproj --no-build --configuration Release --verbosity normal
+    - name: Run tests
+      run: dotnet test Homeworks/UnitTests/src/PromoCodeFactory.UnitTests/PromoCodeFactory.UnitTests.csproj --no-build --configuration Release --verbosity normal
