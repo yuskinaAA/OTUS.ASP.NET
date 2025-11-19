@@ -18,12 +18,16 @@ namespace Pcf.Administration.WebHost.Controllers
         : ControllerBase
     {
         private readonly IRepository<Employee> _employeeRepository;
+        private readonly IRepository<Role> _roleRepository;
 
-        public EmployeesController(IRepository<Employee> employeeRepository)
+        public EmployeesController(
+            IRepository<Employee> employeeRepository,
+            IRepository<Role> roleRepository)
         {
             _employeeRepository = employeeRepository;
+            _roleRepository = roleRepository;
         }
-        
+
         /// <summary>
         /// Получить данные всех сотрудников
         /// </summary>
@@ -57,6 +61,10 @@ namespace Pcf.Administration.WebHost.Controllers
             if (employee == null)
                 return NotFound();
 
+            var role = await _roleRepository.GetByIdAsync(employee.RoleId);
+            if (role == null)
+                return NotFound();
+
             var employeeModel = new EmployeeResponse()
             {
                 Id = employee.Id,
@@ -64,8 +72,8 @@ namespace Pcf.Administration.WebHost.Controllers
                 Role = new RoleItemResponse()
                 {
                     Id = employee.Id,
-                    Name = employee.Role.Name,
-                    Description = employee.Role.Description
+                    Name = role.Name,
+                    Description = role.Description
                 },
                 FullName = employee.FullName,
                 AppliedPromocodesCount = employee.AppliedPromocodesCount

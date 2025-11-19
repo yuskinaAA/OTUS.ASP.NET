@@ -7,14 +7,18 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Pcf.Administration.Core.Abstractions.Repositories;
+using Pcf.Administration.Core.Domain.Administration;
 using Pcf.Administration.DataAccess;
 using Pcf.Administration.DataAccess.Data;
 using Pcf.Administration.DataAccess.Repositories;
-using Pcf.Administration.Core.Domain.Administration;
+using Pcf.Administration.DataAccess.Settings;
+using Pcf.Administration.WebHost.Models;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace Pcf.Administration.WebHost
@@ -34,7 +38,9 @@ namespace Pcf.Administration.WebHost
         {
             services.AddControllers().AddMvcOptions(x=> 
                 x.SuppressAsyncSuffixInActionNames = false);
-            services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
+            //для postgresql
+            /*services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<IDbInitializer, EfDbInitializer>();
             services.AddDbContext<DataContext>(x =>
             {
@@ -42,7 +48,24 @@ namespace Pcf.Administration.WebHost
                 x.UseNpgsql(Configuration.GetConnectionString("PromocodeFactoryAdministrationDb"));
                 x.UseSnakeCaseNamingConvention();
                 x.UseLazyLoadingProxies();
+            });*/
+
+
+            services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
+
+            // Регистрируем MongoDBContext
+            services.AddScoped<MongoDBContext>();
+
+            // Регистрируем IMongoDatabase через MongoDBContext
+            services.AddScoped<IMongoDatabase>(serviceProvider =>
+            {
+                var context = serviceProvider.GetRequiredService<MongoDBContext>();
+                return context.Database;
             });
+
+            // Регистрируем репозитории
+            services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
+            services.AddScoped<IDbInitializer, MongoDbInitializer>();
 
             services.AddOpenApiDocument(options =>
             {
