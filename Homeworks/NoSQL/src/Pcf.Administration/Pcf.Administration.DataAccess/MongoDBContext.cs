@@ -10,12 +10,6 @@ public class MongoDBContext
 {
     private readonly IMongoDatabase _database;
 
-    public IMongoCollection<Employee> Employees =>
-        _database.GetCollection<Employee>("employees");
-
-    public IMongoCollection<Role> Roles =>
-        _database.GetCollection<Role>("roles");
-
     public MongoDBContext(IOptions<MongoDBSettings> mongoDBSettings)
     {
         var client = new MongoClient(mongoDBSettings.Value.ConnectionString);
@@ -24,15 +18,13 @@ public class MongoDBContext
 
     public IMongoDatabase Database => _database;
 
-    public IMongoCollection<T> GetCollection<T>()
+    public IMongoCollection<T> GetCollection<T>(string collectionName = null)
     {
-        var type = typeof(T);
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            collectionName = typeof(T).Name + "s";
+        }
 
-        if (type == typeof(Employee))
-            return Employees as IMongoCollection<T>;
-        else if (type == typeof(Role))
-            return Roles as IMongoCollection<T>;
-        else
-            throw new InvalidOperationException($"No collection defined for type {type.Name}");
+        return _database.GetCollection<T>(collectionName);
     }
 }

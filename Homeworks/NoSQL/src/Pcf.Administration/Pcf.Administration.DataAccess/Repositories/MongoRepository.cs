@@ -15,7 +15,15 @@ public class MongoRepository<T> : IRepository<T> where T: BaseEntity
 
     public MongoRepository(MongoDBContext dbContext)
     {
-        _collection = dbContext.GetCollection<T>();
+        try
+        {
+            string collectionName = typeof(T).Name + "s";
+            _collection = dbContext.GetCollection<T>(collectionName);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to initialize MongoDB collection for type {typeof(T).Name}", ex);
+        }
     }
 
     public async Task<IEnumerable<T>> GetAllAsync()

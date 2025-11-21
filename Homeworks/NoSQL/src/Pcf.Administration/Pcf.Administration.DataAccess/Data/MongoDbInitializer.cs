@@ -20,10 +20,10 @@ public class MongoDbInitializer : IDbInitializer
 
     private async Task InitializeDbAsync()
     {
-        await _database.DropCollectionAsync("employees");
-        await _database.DropCollectionAsync("roles");
-        await _database.CreateCollectionAsync("employees");
-        await _database.CreateCollectionAsync("roles");
+        await _database.DropCollectionAsync("Employees");
+        await _database.DropCollectionAsync("Roles");
+        await _database.CreateCollectionAsync("Employees");
+        await _database.CreateCollectionAsync("Roles");
 
         await SeedRolesAsync();
         await SeedEmployeesAsync();
@@ -31,7 +31,7 @@ public class MongoDbInitializer : IDbInitializer
 
     private async Task SeedRolesAsync()
     {
-        var rolesCollection = _database.GetCollection<Role>("roles");
+        var rolesCollection = _database.GetCollection<Role>("Roles");
         var roles = FakeDataFactory.Roles;
 
         await rolesCollection.InsertManyAsync(roles);
@@ -39,7 +39,7 @@ public class MongoDbInitializer : IDbInitializer
 
     private async Task SeedEmployeesAsync()
     {
-        var employeesCollection = _database.GetCollection<Employee>("employees");
+        var employeesCollection = _database.GetCollection<Employee>("Employees");
         var employees = FakeDataFactory.Employees;
 
         foreach (var employee in employees)
