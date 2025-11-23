@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pcf.GivingToCustomer.Core.Abstractions.Repositories;
 using Pcf.GivingToCustomer.Core.Domain;
+using Pcf.GivingToCustomer.gRPC;
 using Pcf.GivingToCustomer.WebHost.Mappers;
 using Pcf.GivingToCustomer.WebHost.Models;
+using CustomerResponse = Pcf.GivingToCustomer.WebHost.Models.CustomerResponse;
+using CustomerShortResponse = Pcf.GivingToCustomer.WebHost.Models.CustomerShortResponse;
 
 namespace Pcf.GivingToCustomer.WebHost.Controllers
 {

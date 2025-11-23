@@ -2,6 +2,7 @@ using System;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ using Pcf.GivingToCustomer.DataAccess.Data;
 using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.Integration;
 using Pcf.GivingToCustomer.WebHost.Consumer;
+using Pcf.GivingToCustomer.WebHost.Services;
 using Pcf.GivingToCustomer.WebHost.Settings;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -40,6 +42,17 @@ namespace Pcf.GivingToCustomer.WebHost
             services.AddScoped<IDbInitializer, EfDbInitializer>();
             services.AddScoped<PromoCodeReceivedConsumer>();
             services.AddTransient<IGivingToCustomerService, GivingToCustomerService>();
+
+            services.AddGrpc();
+            services.AddGrpcReflection();
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.ConfigureEndpointDefaults(lo =>
+                {
+                    lo.Protocols = HttpProtocols.Http1AndHttp2;
+                });
+            });
+
             services.AddDbContext<DataContext>(x =>
             {
                 //x.UseSqlite("Filename=PromocodeFactoryGivingToCustomerDb.sqlite");
@@ -79,6 +92,12 @@ namespace Pcf.GivingToCustomer.WebHost
             else
             {
                 app.UseHsts();
+                app.UseHttpsRedirection();
+            }
+
+            if (env.IsDevelopment())
+            {
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             }
 
             app.UseOpenApi();
@@ -87,15 +106,17 @@ namespace Pcf.GivingToCustomer.WebHost
                 x.DocExpansion = "list";
             });
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
-            });
 
+                endpoints.MapGrpcService<CustomersGrpcService>();
+                endpoints.MapGrpcReflectionService();
+
+                endpoints.MapControllers();
+                endpoints.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+            });
             dbInitializer.InitializeDb();
         }
 
@@ -109,7 +130,6 @@ namespace Pcf.GivingToCustomer.WebHost
                     h.Username(rmqSettings.Login);
                     h.Password(rmqSettings.Password);
                 });
-
         }
 
         private static void RegisterEndPoints(IBusRegistrationContext context, IRabbitMqBusFactoryConfigurator configurator)
@@ -127,7 +147,7 @@ namespace Pcf.GivingToCustomer.WebHost
             });
 
             // Автоматическая конфигурация остальных endpoints
-            configurator.ConfigureEndpoints(context);
+            //configurator.ConfigureEndpoints(context);
         }
     }
 }

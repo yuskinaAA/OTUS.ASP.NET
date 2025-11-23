@@ -1,0 +1,64 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Pcf.GivingToCustomer.gRPC";
+
+import "google/protobuf/empty.proto";
+
+service GivingToCustomersGrpc {
+  rpc GetAllCustomers (google.protobuf.Empty) returns (CustomersListResponse);
+  rpc GetCustomerById (GetCustomerRequest) returns (CustomerResponse);
+  rpc CreateCustomer (CreateCustomerRequest) returns (CustomerResponse);
+  rpc UpdateCustomer (UpdateCustomerRequest) returns (CustomerResponse);
+  rpc DeleteCustomer (DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}
+
+message GetCustomerRequest {
+  string id = 1;
+}
+
+message DeleteCustomerRequest {
+  string id = 1;
+}
+
+message DeleteCustomerResponse {
+  bool success = 1;
+}
+
+message CreateCustomerRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string email = 3;
+  repeated string preference_ids = 4;
+}
+
+message UpdateCustomerRequest {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated string preference_ids = 5;
+}
+
+message CustomerResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated PreferenceResponse preferences = 5;
+}
+
+message PreferenceResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message CustomersListResponse {
+  repeated CustomerShortResponse customers = 1;
+}
+
+message CustomerShortResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+}
